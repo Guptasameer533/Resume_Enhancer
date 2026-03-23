@@ -1,18 +1,7 @@
-export const runtime = "nodejs"; // Required for pdf-parse (uses node built-ins)
-
-// Turbopack evaluation sandbox polyfill RCA:
-// pdf-parse accesses DOMMatrix at the root module level in CJS. 
-// Turbopack evaluates dynamic imports statically, causing a crash before POST runs.
-if (typeof global !== "undefined") {
-  if (typeof global.DOMMatrix === "undefined") {
-    (global as any).DOMMatrix = class DOMMatrix {};
-  }
-  if (typeof global.ImageData === "undefined") {
-    (global as any).ImageData = class ImageData {};
-  }
-}
+export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
+import { extractTextFromPdf } from "@/lib/pdfParser";
 
 export async function POST(req: NextRequest) {
   try {
@@ -33,22 +22,10 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Dynamic import to avoid Turbopack DOMMatrix build errors
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mod = await import("pdf-parse" as any);
-    const pdfParse = typeof mod.default === "function" ? mod.default : mod;
+    // Use our proven Stage 2 extractor which correctly handles Turbopack dynamic imports
+    const text = await extractTextFromPdf(buffer);
 
-    const data = await pdfParse(buffer);
-    
-    // Ensure text exists
-    if (!data.text || !data.text.trim()) {
-       return NextResponse.json(
-        { error: "Could not extract text. PDF might be empty or scanned." },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json({ text: data.text }, { status: 200 });
+    return NextResponse.json({ text }, { status: 200 });
   } catch (err) {
     console.error("[/api/parse-pdf] Error:", (err as Error).message);
     return NextResponse.json(

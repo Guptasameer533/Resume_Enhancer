@@ -14,6 +14,16 @@ type PdfParseResult = { text: string };
 type PdfParseFn = (buf: Buffer) => Promise<PdfParseResult>;
 
 export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+    // Polyfill Next.js stripped DOM APIs before dynamically loading
+    if (typeof global !== "undefined") {
+        if (typeof global.DOMMatrix === "undefined") {
+            (global as any).DOMMatrix = class DOMMatrix {};
+        }
+        if (typeof global.ImageData === "undefined") {
+            (global as any).ImageData = class ImageData {};
+        }
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mod = await import("pdf-parse" as any);
     // pdf-parse ESM exports the function as .default or as the module itself
