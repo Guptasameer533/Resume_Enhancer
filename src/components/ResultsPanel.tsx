@@ -139,7 +139,6 @@ const atsScore = Math.max(0, data.ats_score || 0);
         >
           Download Report (.txt)
         </button>
-        {/* @ts-expect-error dynamic wrapper loses explicit prop types */}
         <PDFDownloadLink
           document={<ResumeDocument data={data} />}
           fileName="enhanced-resume.pdf"
@@ -149,28 +148,14 @@ const atsScore = Math.max(0, data.ats_score || 0);
         </PDFDownloadLink>
       </div>
 
-      {/* ATS Compatibility Hero Gauge */}
-      <div className="flex flex-col items-center justify-center p-8 mb-8 border border-white/10 bg-white/5 rounded-2xl">
-        <div className="relative w-32 h-32 flex items-center justify-center">
-          <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-            <circle cx="64" cy="64" r="60" className="stroke-slate-700/40 fill-none" strokeWidth="8" />
-            <circle 
-              cx="64" cy="64" r="60" 
-              className={`${getAtsRingColor(atsScore)} fill-none transition-all duration-700 ease-out`} 
-              strokeWidth="8" 
-              strokeDasharray={circumference} 
-              strokeDashoffset={dashoffset}
-              strokeLinecap="round"
-            />
-          </svg>
-          <div className="text-4xl font-bold text-white relative z-10">{atsScore}%</div>
+      <div className="flex gap-4 mb-8">
+        <div className={`flex-1 p-6 rounded-xl border ${getBadgeColor(data.overall_score)}`}>
+          <div className="text-sm font-semibold mb-1 opacity-80">OVERALL SCORE</div>
+          <div className="text-4xl font-bold">{data.overall_score}</div>
         </div>
-        <div className="mt-5 text-lg font-bold text-slate-200">ATS Compatibility Score</div>
-        
-        {/* Keeping Overall Score info compactly beneath */}
-        <div className="mt-4 px-4 py-2 rounded-lg bg-black/20 border border-white/5 flex items-center gap-3">
-          <span className="text-sm font-semibold text-slate-400">OVERALL RATING</span>
-          <span className={`px-2 py-0.5 rounded text-sm font-bold border ${getBadgeColor(data.overall_score)}`}>{data.overall_score}/100</span>
+        <div className={`flex-1 p-6 rounded-xl border ${getBadgeColor(data.ats_score)}`}>
+          <div className="text-sm font-semibold mb-1 opacity-80">ATS SCORE</div>
+          <div className="text-4xl font-bold">{data.ats_score}</div>
         </div>
       </div>
 
