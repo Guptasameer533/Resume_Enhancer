@@ -21,7 +21,15 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Dynamic import to avoid Turbopack DOMMatrix build errors as discovered in Stage 2
+    // Polyfill DOM APIs that pdf-parse implicitly expects but Next.js strips
+    if (typeof global.DOMMatrix === "undefined") {
+      (global as any).DOMMatrix = class DOMMatrix {};
+    }
+    if (typeof global.ImageData === "undefined") {
+      (global as any).ImageData = class ImageData {};
+    }
+
+    // Dynamic import to avoid Turbopack DOMMatrix build errors
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mod = await import("pdf-parse" as any);
     const pdfParse = typeof mod.default === "function" ? mod.default : mod;
