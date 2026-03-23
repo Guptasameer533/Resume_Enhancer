@@ -24,18 +24,39 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mod = await import("pdf-parse" as any);
-    // pdf-parse ESM exports the function as .default or as the module itself
-    const pdfParse: PdfParseFn =
-        typeof mod.default === "function" ? mod.default : (mod as unknown as PdfParseFn);
-
-    const data = await pdfParse(buffer);
-    const text = data.text.trim();
-    if (!text) {
-        throw new Error(
-            "Could not extract text from PDF. Try pasting your resume instead."
-        );
+    try {
+        // Use the legacy build which perfectly supports CommonJS and Turbopack
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
+        
+        // Disable worker for Node API route execution
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+        
+        const loadingTask = pdfjsLib.getDocument({
+            data: new Uint8Array(buffer),
+            useSystemFonts: true,
+            disableFontFace: true,
+            standardFontDataUrl: "node_modules/pdfjs-dist/standard_fonts/",
+        });
+        
+        const pdfDocument = await loadingTask.promise;
+        let fullText = "";
+        
+        for (let i = 1; i <= pdfDocument.numPages; i++) {
+            const page = await pdfDocument.getPage(i);
+            const content = await page.getTextContent();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const pageText = content.items.map((item: any) => item.str).join(" ");
+            fullText += pageText + "\n";
+        }
+        
+        const text = fullText.trim();
+        if (!text) {
+            throw new Error("Could not extract text from PDF. Try pasting your resume instead.");
+        }
+        return text;
+    } catch (error) {
+        console.error("PDF extraction failed:", error);
+        throw new Error("Could not parse PDF document. It may be corrupted or encrypted.");
     }
-    return text;
 }
