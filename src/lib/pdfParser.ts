@@ -36,7 +36,8 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
             data: new Uint8Array(buffer),
             useSystemFonts: true,
             disableFontFace: true,
-            standardFontDataUrl: "node_modules/pdfjs-dist/standard_fonts/",
+            useWorkerFetch: false,
+            isEvalSupported: false,
         });
         
         const pdfDocument = await loadingTask.promise;
@@ -57,6 +58,7 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
         return text;
     } catch (error) {
         console.error("PDF extraction failed:", error);
-        throw new Error("Could not parse PDF document. It may be corrupted or encrypted.");
+        const msg = error instanceof Error ? error.message : String(error);
+        throw new Error(`PDF Error: ${msg}`);
     }
 }
