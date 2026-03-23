@@ -181,7 +181,6 @@ export default function ResultsPanel({ data }: ResultsPanelProps) {
             Export .txt
           </button>
           
-          {/* @ts-expect-error dynamic wrapper loses explicit prop types */}
           <PDFDownloadLink
             document={<ResumeDocument data={data} />}
             fileName="enhanced-resume.pdf"
