@@ -179,7 +179,7 @@ export default function ResumeForm() {
             {state.status === "loading" && <LoadingSpinner />}
 
             {/* ── Results ─────────────────── */}
-            {state.status === "success" && <ResultsPanel result={state.result} />}
+            {state.status === "success" && <ResultsPanel data={state.result as any} />}
         </div>
     );
 }
