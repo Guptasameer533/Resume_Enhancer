@@ -1,38 +1,67 @@
-import type { Metadata } from "next";
-import ResumeForm from "@/components/ResumeForm";
+"use client";
 
-export const metadata: Metadata = {
-  title: "AI Resume Enhancer — Powered by Groq",
-  description:
-    "Paste or upload your resume and get instant AI-powered suggestions to improve language, structure, impact, and ATS-friendliness.",
-};
+import { useState } from "react";
+import ResumeInput from "@/components/ResumeInput";
+import ResultsPanel from "@/components/ResultsPanel";
+import type { EnhanceResponse } from "@/types/resume";
 
 export default function HomePage() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [results, setResults] = useState<EnhanceResponse | null>(null);
+
+  const handleSubmit = async (text: string) => {
+    setLoading(true);
+    setError(null);
+    setResults(null);
+
+    try {
+      const res = await fetch("/api/enhance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resumeText: text }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "An unknown error occurred.");
+      } else {
+        setResults(data);
+      }
+    } catch (err) {
+      setError("Network error — check your connection");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-2xl">
-        {/* Hero */}
-        <div className="mb-10 text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs font-medium text-indigo-300">
-            ✨ Powered by Groq · llama-3.1-70b
-          </div>
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-            Resume Enhancer
-          </h1>
-          <p className="mt-3 text-base text-slate-400">
-            Paste or upload your resume. Get section-by-section AI feedback
-            in seconds — covering language, structure, impact&nbsp;&amp;&nbsp;ATS score.
-          </p>
-        </div>
+    <main className="max-w-4xl mx-auto px-4 py-8">
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl mb-3">
+          Resume Enhancer
+        </h1>
+        <p className="text-slate-400">Powered by Groq AI</p>
+      </div>
 
-        {/* Card */}
+      <div className="space-y-8">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-sm">
-          <ResumeForm />
+          <ResumeInput onSubmit={handleSubmit} isLoading={loading} />
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-600">
-          Your resume is not stored. Analysis happens in real-time.
-        </p>
+        {error && (
+          <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-sm">
+            <span className="font-bold mr-2">Error:</span>
+            {error}
+          </div>
+        )}
+
+        {results && (
+          <div className="pt-4">
+            <ResultsPanel data={results} />
+          </div>
+        )}
       </div>
     </main>
   );
