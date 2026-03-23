@@ -18,6 +18,7 @@ Otherwise respond with this exact schema:
     {
       "name": <one of: "Summary" | "Experience" | "Skills" | "Education" | "Formatting">,
       "score": <integer 0-100>,
+      "original_text": <string — the exact original text of this section from the resume, or empty if not found>,
       "strengths": [<string>, <string>, <string>],
       "improvements": [<string>, <string>, <string>, <string>],
       "rewrite_suggestion": <string — one improved rewrite of this section>
