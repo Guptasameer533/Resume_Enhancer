@@ -1,5 +1,17 @@
 export const runtime = "nodejs"; // Required for pdf-parse (uses node built-ins)
 
+// Turbopack evaluation sandbox polyfill RCA:
+// pdf-parse accesses DOMMatrix at the root module level in CJS. 
+// Turbopack evaluates dynamic imports statically, causing a crash before POST runs.
+if (typeof global !== "undefined") {
+  if (typeof global.DOMMatrix === "undefined") {
+    (global as any).DOMMatrix = class DOMMatrix {};
+  }
+  if (typeof global.ImageData === "undefined") {
+    (global as any).ImageData = class ImageData {};
+  }
+}
+
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -20,14 +32,6 @@ export async function POST(req: NextRequest) {
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-
-    // Polyfill DOM APIs that pdf-parse implicitly expects but Next.js strips
-    if (typeof global.DOMMatrix === "undefined") {
-      (global as any).DOMMatrix = class DOMMatrix {};
-    }
-    if (typeof global.ImageData === "undefined") {
-      (global as any).ImageData = class ImageData {};
-    }
 
     // Dynamic import to avoid Turbopack DOMMatrix build errors
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
