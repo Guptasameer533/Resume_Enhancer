@@ -15,6 +15,38 @@ export default function ResultsPanel({ data }: ResultsPanelProps) {
     return <div className="text-slate-400 text-center py-8">No sections found</div>;
   }
 
+  const handleDownload = () => {
+    let report = `RESUME ENHANCEMENT REPORT\n`;
+    report += `Overall Score: ${data.overall_score}/100\n`;
+    report += `ATS Score: ${data.ats_score}/100\n\n`;
+
+    data.sections.forEach((s) => {
+      report += `SECTION: ${s.name}  |  Score: ${s.score}/100\n`;
+      if (s.strengths.length > 0) {
+        report += `Strengths:\n`;
+        s.strengths.forEach((str) => (report += `+ ${str}\n`));
+      }
+      if (s.improvements.length > 0) {
+        report += `Improvements:\n`;
+        s.improvements.forEach((imp) => (report += `-> ${imp}\n`));
+      }
+      if (s.rewrite_suggestion) {
+        report += `Suggested Rewrite:\n${s.rewrite_suggestion}\n`;
+      }
+      report += `\n`;
+    });
+
+    const blob = new Blob([report], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "resume-enhancement-report.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 const atsScore = Math.max(0, data.ats_score || 0);
   const circumference = 376.99;
   const dashoffset = circumference * (1 - atsScore / 100);
@@ -27,6 +59,16 @@ const atsScore = Math.max(0, data.ats_score || 0);
 
   return (
     <div className="space-y-6">
+      {/* Action Bar */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={handleDownload}
+          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors border border-indigo-500/50"
+        >
+          Download Report (.txt)
+        </button>
+      </div>
+
       {/* ATS Compatibility Hero Gauge */}
       <div className="flex flex-col items-center justify-center p-8 mb-8 border border-white/10 bg-white/5 rounded-2xl">
         <div className="relative w-32 h-32 flex items-center justify-center">
