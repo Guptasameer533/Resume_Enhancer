@@ -24,16 +24,6 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
         }
     }
 
-    // Polyfill Turbopack's missing node module sandboxing mechanism
-    // When external dependencies try to load Node CJS built-ins (like 'fs'), Turbopack 
-    // strictly intercepts the require and invokes `process.getBuiltinModule`, but glitched
-    // and forgot to instantiate it in the Edge/Node API route environment!
-    if (typeof process !== "undefined" && !(process as any).getBuiltinModule) {
-        // eslint-disable-next-line no-eval
-        const realRequire = eval("require");
-        (process as any).getBuiltinModule = (name: string) => realRequire(name);
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mod = await import("pdf-parse" as any);
     // pdf-parse ESM exports the function as .default or as the module itself
