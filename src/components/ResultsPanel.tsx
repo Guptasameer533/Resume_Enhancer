@@ -2,6 +2,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import type { EnhanceResponse, ResumeSection } from "@/types/resume";
 import { ResumeDocument } from "./ResumeDocument";
+import { LATEX_HEADER, LATEX_FOOTER } from "@/lib/latexTemplate";
 
 const PDFDownloadLink = dynamic(
   () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
@@ -119,7 +120,25 @@ export default function ResultsPanel({ data }: ResultsPanelProps) {
     URL.revokeObjectURL(url);
   };
 
-const atsScore = Math.max(0, data.ats_score || 0);
+  const handleDownloadTex = () => {
+    const validSections = data.sections.filter(s => 
+      s.rewrite_suggestion && !s.rewrite_suggestion.toLowerCase().includes('not found')
+    );
+    const body = validSections.map(s => s.rewrite_suggestion).join('\n\n');
+    const texContent = `${LATEX_HEADER}\n${body}\n${LATEX_FOOTER}`;
+
+    const blob = new Blob([texContent], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "enhanced-resume.tex";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const atsScore = Math.max(0, data.ats_score || 0);
   const circumference = 376.99;
   const dashoffset = circumference * (1 - atsScore / 100);
 
@@ -133,6 +152,12 @@ const atsScore = Math.max(0, data.ats_score || 0);
     <div className="space-y-6">
       {/* Action Bar */}
       <div className="flex justify-end gap-3 mb-4">
+        <button
+          onClick={handleDownloadTex}
+          className="px-4 py-2 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 text-sm font-semibold rounded-lg shadow-sm transition-colors border border-emerald-500/30"
+        >
+          Download Resume (.tex)
+        </button>
         <button
           onClick={handleDownload}
           className="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm font-semibold rounded-lg shadow-sm transition-colors border border-indigo-500/30"
@@ -148,14 +173,28 @@ const atsScore = Math.max(0, data.ats_score || 0);
         </PDFDownloadLink>
       </div>
 
-      <div className="flex gap-4 mb-8">
-        <div className={`flex-1 p-6 rounded-xl border ${getBadgeColor(data.overall_score)}`}>
-          <div className="text-sm font-semibold mb-1 opacity-80">OVERALL SCORE</div>
-          <div className="text-4xl font-bold">{data.overall_score}</div>
+      {/* ATS Compatibility Hero Gauge */}
+      <div className="flex flex-col items-center justify-center p-8 mb-8 border border-white/10 bg-white/5 rounded-2xl">
+        <div className="relative w-32 h-32 flex items-center justify-center">
+          <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+            <circle cx="64" cy="64" r="60" className="stroke-slate-700/40 fill-none" strokeWidth="8" />
+            <circle 
+              cx="64" cy="64" r="60" 
+              className={`${getAtsRingColor(atsScore)} fill-none transition-all duration-700 ease-out`} 
+              strokeWidth="8" 
+              strokeDasharray={circumference} 
+              strokeDashoffset={dashoffset}
+              strokeLinecap="round"
+            />
+          </svg>
+          <div className="text-4xl font-bold text-white relative z-10">{atsScore}%</div>
         </div>
-        <div className={`flex-1 p-6 rounded-xl border ${getBadgeColor(data.ats_score)}`}>
-          <div className="text-sm font-semibold mb-1 opacity-80">ATS SCORE</div>
-          <div className="text-4xl font-bold">{data.ats_score}</div>
+        <div className="mt-5 text-lg font-bold text-slate-200">ATS Compatibility Score</div>
+        
+        {/* Keeping Overall Score info compactly beneath */}
+        <div className="mt-4 px-4 py-2 rounded-lg bg-black/20 border border-white/5 flex items-center gap-3">
+          <span className="text-sm font-semibold text-slate-400">OVERALL RATING</span>
+          <span className={`px-2 py-0.5 rounded text-sm font-bold border ${getBadgeColor(data.overall_score)}`}>{data.overall_score}/100</span>
         </div>
       </div>
 
