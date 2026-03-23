@@ -1,5 +1,12 @@
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import type { EnhanceResponse, ResumeSection } from "@/types/resume";
+import { ResumeDocument } from "./ResumeDocument";
+
+const PDFDownloadLink = dynamic(
+  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
+  { ssr: false }
+);
 
 interface ResultsPanelProps {
   data: EnhanceResponse;
@@ -125,13 +132,21 @@ const atsScore = Math.max(0, data.ats_score || 0);
   return (
     <div className="space-y-6">
       {/* Action Bar */}
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end gap-3 mb-4">
         <button
           onClick={handleDownload}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors border border-indigo-500/50"
+          className="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm font-semibold rounded-lg shadow-sm transition-colors border border-indigo-500/30"
         >
           Download Report (.txt)
         </button>
+        {/* @ts-expect-error dynamic wrapper loses explicit prop types */}
+        <PDFDownloadLink
+          document={<ResumeDocument data={data} />}
+          fileName="enhanced-resume.pdf"
+          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors border border-indigo-500/50 flex items-center justify-center min-w-[200px]"
+        >
+          {({ loading }: { loading: boolean }) => (loading ? "Generating PDF..." : "Download Resume (.pdf)")}
+        </PDFDownloadLink>
       </div>
 
       {/* ATS Compatibility Hero Gauge */}
