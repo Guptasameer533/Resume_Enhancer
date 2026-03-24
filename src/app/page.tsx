@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import ResumeInput from "@/components/ResumeInput";
 import ResultsPanel from "@/components/ResultsPanel";
 import type { EnhanceResponse } from "@/types/resume";
@@ -9,6 +9,15 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<EnhanceResponse | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (results && resultsRef.current) {
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
+  }, [results]);
 
   const handleSubmit = async (text: string) => {
     setLoading(true);
@@ -62,7 +71,7 @@ export default function HomePage() {
         )}
 
         {results && (
-          <div className="pt-4">
+          <div className="pt-4 scroll-mt-6" ref={resultsRef}>
             <ResultsPanel data={results} />
           </div>
         )}

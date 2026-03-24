@@ -67,9 +67,13 @@ function SectionCard({ section }: { section: ResumeSection }) {
             {section.original_text && (
               <button 
                 onClick={() => setShowOriginal(!showOriginal)}
-                className="text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 px-2 py-1 rounded"
+                className={`text-xs font-semibold transition-all px-3 py-1.5 rounded-md border shadow-sm active:scale-95 ${
+                  showOriginal 
+                    ? "bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white" 
+                    : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700"
+                }`}
               >
-                View {showOriginal ? "Rewrite" : "Original"}
+                {showOriginal ? "View Suggested Rewrite" : "View Original Text"}
               </button>
             )}
           </div>
