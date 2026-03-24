@@ -43,3 +43,6 @@ next-env.d.ts
 # ai instructions
 CLAUDE.md
 AGENTS.md
+
+# misc local logs
+build-error.txt
