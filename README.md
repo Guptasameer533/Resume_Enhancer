@@ -1,43 +1,65 @@
 # Resume Enhancer
-A professional, AI-powered resume analysis and optimization tool that evaluates ATS compatibility and intelligently rewrites your bullet points. It helps job seekers instantly identify structural weaknesses in their resumes and provides highly polished, metric-driven rewriting suggestions tailored to pass automated screening systems.
 
-### Live Demo
-[Vercel Deployment URL Pending]
+A Next.js web application that uses AI to analyze and enhance professional resumes against ATS (Applicant Tracking System) standards.
 
-### Features
-* **PDF & Text Support:** Seamlessly upload a PDF file or paste your raw text for instant analysis.
-* **Component-Level Analysis:** Breaks down your resume into distinct sections, scoring each individually.
-* **Intelligent Feedback:** Provides granular lists of what is working (strengths) and what needs improvement per section.
-* **AI Rewrites & Comparison:** Generates a highly optimized rewrite for each section with an interactive toggle to compare the AI's version against your original text.
-* **Dual Export:** Export your complete diagnostic report as a `.txt` file, or instantly download the enhanced, rewritten version as a new `.pdf` file.
-* **Premium Glassmorphism UI:** Features a high-contrast, responsive enterprise SaaS aesthetic with seamless Light/Dark mode support.
+## Live Demo
+Check out the live application: [https://resume-enhancer-rho.vercel.app/](https://resume-enhancer-rho.vercel.app/)
 
-### Tech Stack
-* **Framework:** Next.js (App Router, React 19)
-* **Styling:** Tailwind CSS (v4)
-* **AI API:** Groq SDK (`llama-3.1-70b-versatile`)
-* **PDF Parsing:** `pdfjs-dist` (Mozilla)
-* **PDF Generation:** `@react-pdf/renderer`
-* **Deployment Platform:** Vercel
+## Features
+- **PDF & Text Input:** Upload a PDF resume or paste raw text.
+- **Detailed Component Analysis:** Section-by-section breakdown (Summary, Experience, Skills, Education) with individual ATS scores.
+- **AI Rewrites:** Highly optimized rewriting suggestions that preserve your original bullet point structure.
+- **Export Options:** Download the analysis as a `.txt` report or instantly export the enhanced resume as a `.pdf`.
+- **Modern UI:** Responsive, enterprise-grade design featuring integrated Dark and Light modes.
 
-### Setup Instructions
-1. `git clone https://github.com/Guptasameer533/Resume_Enhancer.git`
-2. `cd resume-enhancer`
-3. `npm install`
-4. Create `.env.local` with `GROQ_API_KEY=your_key`
-5. `npm run dev`
-6. Open `http://localhost:3000`
+## Tech Stack
+- **Frontend:** Next.js (App Router, React 19), Tailwind CSS
+- **Backend API:** Node.js Serverless Route Handlers
+- **AI Integration:** Groq SDK (`llama-3.1-70b-versatile`)
+- **PDF Utilities:** `pdfjs-dist` (Text Extraction), `@react-pdf/renderer` (Document Generation)
+- **Deployment:** Vercel
 
-### AI Integration
-The application interfaces via the Groq SDK with the `llama-3.1-70b-versatile` model, strictly enforcing a predefined JSON output using the `response_format: { type: "json_object" }` parameter. The prompt explicitly casts the persona of an expert technical recruiter, instructing the LLM to process the raw input and map it definitively into an expected TypeScript interface. The resulting JSON payload guarantees structured access to deeply nested data, including a global `ats_score`, an `overall_score`, and an array of `sections`, each strictly maintaining its `original_text`, arrays of `strengths` and `improvements`, and a final `rewrite_suggestion`.
+## System Architecture
+1. **Frontend Input:** The React UI accepts a PDF or text via Client Components.
+2. **Server-Side Extraction:** The raw PDF buffer is parsed server-side using `pdfjs-dist` to avoid client CPU blocking.
+3. **AI Processing:** The Next.js `/api/enhance` route securely queries the Groq AI API leveraging Strict JSON mode ensuring strongly-typed parsing logic without API key leakage.
+4. **Client-Side Export:** AI-generated JSON payloads dynamically build interactive dashboard components and render a downloadable PDF locally in the browser via `@react-pdf/renderer`.
 
-### Design Decisions
-* **Server-Side AI Proxies over Client Fetches:** The Groq API interaction was abstracted into a dedicated Next.js Route Handler (`/api/enhance`). This inherently prevents the exposure of the sensitive `GROQ_API_KEY` to the client browser while allowing the backend to execute heavy JSON validation.
-* **Structured JSON over Free Text:** Instead of asking the LLM to return markdown, we forced a strict JSON schema. This unblocks the deterministic rendering of React dashboard components, SVG gauges, and arrays of interactive cards without relying on fragile regex string parsing.
-* **`pdfjs-dist` over Deprecated Parsers:** While `pdf-parse` is the industry standard for lightweight extraction, it violently crashed the modern Next.js Turbopack environment and aggressively threw `bad XRef entry` errors on dynamically generated PDFs. We explicitly pivoted to Mozilla's `pdfjs-dist` to parse raw page streams reliably in Node.js.
-* **Client-Side PDF Architecture:** Opted to use `@react-pdf/renderer` dynamically on the client (`ssr: false`) rather than generating PDFs on the Next.js edge. This eliminates server-side memory bloat and font-loading network latency, providing a perfectly instant download experience directly in the browser engine.
+## Setup & Installation
 
-### What I Would Improve
-* **Multi-Column PDF Semantic Parsing:** Currently, standard PDF parsers read text physically from left to right. If a user uploads a heavy two-column resume design, the semantic parsing sometimes jumbles dates and descriptions in the raw text string before the AI even sees it.
-* **Streaming Generation UI:** The current `/api/enhance` route waits for the full JSON payload before returning. Implementing the Vercel AI SDK to stream the JSON chunks to the client would provide a much faster perceived loading experience instead of a static loading spinner.
-* **Custom Persona Injector:** Allowing the user to pass a specific Job Description or Role (e.g., "Product Manager" vs "DevOps Engineer") so the AI heavily anchors its rewrites against precise industry keywords rather than general best-practices.
+To run this project locally, follow these steps:
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Guptasameer533/Resume_Enhancer.git
+   cd resume-enhancer
+   ```
+
+2. Install the dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   Create a `.env.local` file in the root directory and add your Groq API key:
+   ```env
+   GROQ_API_KEY=your_groq_api_key_here
+   ```
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+5. Open your browser:
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## Design & Implementation Decisions
+- **`pdfjs-dist` vs. `pdf-parse`:** Moved away from the unmaintained `pdf-parse` library due to Next.js Turbopack compilation issues and modern `XRef` parsing crashes.
+- **Structured JSON Prompts:** Leveraging deterministic JSON-formatted AI output prevents fragile Markdown regex parsing, vastly stabilizing front-end React dashboard rendering.
+- **Client PDF Generation:** Offloaded the final PDF rendering from the server directly to the browser to eliminate Vercel serverless function memory limits and network latency.
+
+## Future Improvements
+- **Advanced PDF Semantics:** Enhancing the initial extraction pipeline to accurately capture two-column structural text flow.
+- **UI Streaming Responses:** Integrating Vercel AI SDK to stream JSON fragments for a better progressive loading experience.
+- **Role Targets:** Allowing users to manually input a target "Job Title" so the AI explicitly refines bullet points around specific industry keywords.
