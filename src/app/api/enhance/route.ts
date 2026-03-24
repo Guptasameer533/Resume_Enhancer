@@ -25,7 +25,14 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
     }
 
-    const resumeText = (body?.resumeText ?? "").trim();
+    let resumeText = (body?.resumeText ?? "").trim();
+
+    // Strip common LaTeX commands to prevent the LLM from mimicking the LaTeX format
+    resumeText = resumeText
+        .replace(/\\[a-zA-Z]+\*?(?:\[[^\]]*\])?(?:{[^}]*})?/g, " ") // Remove things like \begin{center}, \textbf{...}, \hspace{...}
+        .replace(/[{}]/g, "") // Remove remaining braces
+        .replace(/\s+/g, " ") // Normalize multiple spaces
+        .trim();
 
     if (!resumeText) {
         return NextResponse.json(
