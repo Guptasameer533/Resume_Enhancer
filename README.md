@@ -59,7 +59,4 @@ To run this project locally, follow these steps:
 - **Structured JSON Prompts:** Leveraging deterministic JSON-formatted AI output prevents fragile Markdown regex parsing, vastly stabilizing front-end React dashboard rendering.
 - **Client PDF Generation:** Offloaded the final PDF rendering from the server directly to the browser to eliminate Vercel serverless function memory limits and network latency.
 
-## Future Improvements
-- **Advanced PDF Semantics:** Enhancing the initial extraction pipeline to accurately capture two-column structural text flow.
-- **UI Streaming Responses:** Integrating Vercel AI SDK to stream JSON fragments for a better progressive loading experience.
-- **Role Targets:** Allowing users to manually input a target "Job Title" so the AI explicitly refines bullet points around specific industry keywords.
+For any querry pls reach out.
