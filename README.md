@@ -39,5 +39,5 @@ The application interfaces via the Groq SDK with the `llama-3.1-70b-versatile` m
 
 ### What I Would Improve
 * **Multi-Column PDF Semantic Parsing:** Currently, standard PDF parsers read text physically from left to right. If a user uploads a heavy two-column resume design, the semantic parsing sometimes jumbles dates and descriptions in the raw text string before the AI even sees it.
-* **Native LaTeX Compilation:** The current PDF export relies on CSS flexbox equivalents. For true ATS safety, I would bypass frontend rendering entirely and stitch the LLM output directly into a raw `.tex` string so users could download a flawlessly compiled LaTeX template.
+* **Streaming Generation UI:** The current `/api/enhance` route waits for the full JSON payload before returning. Implementing the Vercel AI SDK to stream the JSON chunks to the client would provide a much faster perceived loading experience instead of a static loading spinner.
 * **Custom Persona Injector:** Allowing the user to pass a specific Job Description or Role (e.g., "Product Manager" vs "DevOps Engineer") so the AI heavily anchors its rewrites against precise industry keywords rather than general best-practices.
